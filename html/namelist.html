@@ -59,6 +59,9 @@
         background-color: greenyellow;
       }
       tr.bg-7 {
+        background-color: gray;
+      }
+      tr.bg-8 {
         background-color: lightgray;
       }
       #nameTable > colgroup col:nth-child(1) {
@@ -79,7 +82,8 @@
         <a class="navitem" href="#order-4">ひらがな漢字</a>
         <a class="navitem" href="#order-5">ひらがなのみ</a>
         <a class="navitem" href="#order-6">カタカナのみ</a>
-        <a class="navitem" href="#order-7">漢字のみ</a>
+        <a class="navitem" href="#order-7">「ノツケヶ・」と漢字のみ</a>
+        <a class="navitem" href="#order-8">漢字のみ</a>
         <a class="navitem" href="#order-400">判別種別なし</a>
       </div>
     </header>
@@ -93,13 +97,33 @@
 
       <div id="note">
         扱いをどうするか？
+        <br />
+        <b>課題１</b>
+        とりあえず、漢字と「ノ、ケ、・、ツ」だけは除外して考える＝＞「ノツケ・」と漢字のみ種別を用意
+        <br />
+        例
         <ul>
           <li>ノ（中ノ沢、沼ノ端 etc）</li>
           <li>ケ（月ケ岡、豊ケ岡 etc）</li>
           <li>・（元町・中華街、愛・地球博記念公園 etc）</li>
           <li>ツ（四ツ小屋、二ツ井、 etc）</li>
         </ul>
-        漢字と「ノ、ケ、・、ツ」だけは除外？本HTMLでは、現状していない。
+
+        <br />
+        <b>課題２</b>
+        カッコをどうする？
+        <br>
+        例
+        <dl>
+          <dt>丸カッコ</dt>
+          <dd>（：FF08</dd>
+          <dd>）：FF09</dd>
+        </dl>
+        <dt>
+          <dt>〈〉←名前わからない</dt>
+          <dd>〈：3008</dd>
+          <dd>〉:3009</dd>
+        </dl>
       </div>
       <table id="nameTable">
         <colgroup>
@@ -162,6 +186,10 @@
         return { text: 'カタカナのみ', order: order };
       }
 
+      order++;
+      if (/^[\u4E00-\u9FFFノツケヶ・]+/.test(string)) {
+        return { text: '「ノツケヶ・」と漢字のみ', order: order };
+      }
       order++;
       if (/^[\u4E00-\u9FFF]+/.test(string)) {
         return { text: '漢字のみ', order: order };
