@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>文字情報見る</title>
+    <title>高輪ゲートウェイゲーム用文字判別</title>
 
     <style>
       header {
@@ -38,27 +38,29 @@
         border: solid 1px black;
       }
       tr.bg-0 {
-        background-color: cyan;
+        background-color: skyblue;
       }
       tr.bg-1 {
-        background-color: lightcyan;
+        background-color: lightblue;
       }
       tr.bg-2 {
-        background-color: yellowgreen;
+        background-color: lightcyan;
       }
       tr.bg-3 {
-        background-color: greenyellow;
-      }
-      tr.bg-4 {
         background-color: lightsalmon;
       }
-      tr.bg-5 {
+      tr.bg-4 {
         background-color: lightpink;
       }
+      tr.bg-5 {
+        background-color: yellowgreen;
+      }
       tr.bg-6 {
+        background-color: greenyellow;
+      }
+      tr.bg-7 {
         background-color: lightgray;
       }
-
       #nameTable > colgroup col:nth-child(1) {
         width: 20%;
       }
@@ -72,17 +74,33 @@
       <div class="nav-wrapper">
         <a class="navitem" href="#order-0">漢字カタカナ</a>
         <a class="navitem" href="#order-1">カタカナ漢字</a>
-        <a class="navitem" href="#order-2">漢字ひらがな</a>
-        <a class="navitem" href="#order-3">ひらがな漢字</a>
-        <a class="navitem" href="#order-4">ひらがなのみ</a>
-        <a class="navitem" href="#order-5">カタカナのみ</a>
-        <a class="navitem" href="#order-6">漢字のみ</a>
+        <a class="navitem" href="#order-2">漢字とカタカナだけ</a>
+        <a class="navitem" href="#order-3">漢字ひらがな</a>
+        <a class="navitem" href="#order-4">ひらがな漢字</a>
+        <a class="navitem" href="#order-5">ひらがなのみ</a>
+        <a class="navitem" href="#order-6">カタカナのみ</a>
+        <a class="navitem" href="#order-7">漢字のみ</a>
         <a class="navitem" href="#order-400">判別種別なし</a>
       </div>
     </header>
     <main id="main">
-      <h1>文字情報見る</h1>
+      <h1>高輪ゲートウェイゲーム用文字判別</h1>
+      <div>
+        <a href="https://youtu.be/Vq8F2Qd6wKE">
+          高輪ゲートウェイゲームの本家動画
+        </a>
+      </div>
 
+      <div id="note">
+        扱いをどうするか？
+        <ul>
+          <li>ノ（中ノ沢、沼ノ端 etc）</li>
+          <li>ケ（月ケ岡、豊ケ岡 etc）</li>
+          <li>・（元町・中華街、愛・地球博記念公園 etc）</li>
+          <li>ツ（四ツ小屋、二ツ井、 etc）</li>
+        </ul>
+        漢字と「ノ、ケ、・、ツ」だけは除外？本HTMLでは、現状していない。
+      </div>
       <table id="nameTable">
         <colgroup>
           <col />
@@ -102,17 +120,26 @@
   </body>
 
   <script>
-    function isKanjiKakatana(string) {
-      // 30FB 中点 ＜ー除く
+    function getStringsType(string) {
+      // 30FB 中点 （モンティ・ホール問題）
       // 30FC 長音
       let order = 0;
-      if (/^[\u4E00-\u9FFF]+[\u30A0-\u30FA\u30FC-\u30FF]+$/.test(string)) {
+      if (/^[\u4E00-\u9FFF]+[\u30A0-\u30FF]+$/.test(string)) {
         return { text: '漢字カタカナ', order: order };
       }
 
       order++;
-      if (/^[\u30A0-\u30FA\u30FC-\u30FF]+[\u4E00-\u9FFF]+$/.test(string)) {
+      if (/^[\u30A0-\u30FF]+[\u4E00-\u9FFF]+$/.test(string)) {
         return { text: 'カタカナ漢字', order: order };
+      }
+
+      order++;
+      if (
+        /^(?=.*[\u4E00-\u9FFF])(?=.*[\u30A0-\u30FF])[\u30A0-\u30FF\u4E00-\u9FFF]+$/.test(
+          string
+        )
+      ) {
+        return { text: '漢字とカタカナだけ', order: order };
       }
 
       order++;
@@ -131,7 +158,7 @@
       }
 
       order++;
-      if (/^[\u30A0-\u30FA\u30FC-\u30FF]+$/.test(string)) {
+      if (/^[\u30A0-\u30FF]+$/.test(string)) {
         return { text: 'カタカナのみ', order: order };
       }
 
@@ -148,10 +175,10 @@
 
       csvRows
         .sort((a, b) => {
-          const { text: text_a, order: order_a } = isKanjiKakatana(
+          const { text: text_a, order: order_a } = getStringsType(
             a.split(',')[0]
           );
-          const { text: text_b, order: order_b } = isKanjiKakatana(
+          const { text: text_b, order: order_b } = getStringsType(
             b.split(',')[0]
           );
           return order_a - order_b;
@@ -161,7 +188,7 @@
 
           const csv = row.split(',');
           const string = csv[0];
-          const { text, order } = isKanjiKakatana(string);
+          const { text, order } = getStringsType(string);
 
           const isUpdateOrder = tmpOrder != order;
           if (isUpdateOrder) {
