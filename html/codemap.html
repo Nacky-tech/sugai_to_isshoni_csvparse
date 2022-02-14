@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文字情報見る</title>
+
+    <style>
+      table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+      }
+      td {
+        border: solid 1px black;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>文字情報見る</h1>
+    <main id="main">
+      <table id="nameTable">
+        <colgroup>
+          <col />
+          <col />
+          <col />
+          <col />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>10進数表記</th>
+            <th>16進数表記</th>
+            <th>文字</th>
+            <th>出現回数</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+  </body>
+
+  <script>
+    window.onload = function () {
+      csvRows.forEach((row, ind) => {
+        const tr = document.createElement('tr');
+
+        const csv = row.split(',');
+        if (csv.length < 4) {
+          return;
+        }
+
+        csv.forEach((col) => {
+          const td = document.createElement('td');
+          td.innerText = col;
+          tr.appendChild(td);
+        });
+
+        document.querySelector('#nameTable > tbody').append(tr);
+      });
+    };
+
+    //Program.cs 側からCSVデータを文字列として書き込む
+    const csvRows = `{{ csvdata }}`.split('\n');
+  </script>
+</html>

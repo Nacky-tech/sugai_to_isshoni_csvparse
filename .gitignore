@@ -1,0 +1,11 @@
+.DS_Store
+#.vscode
+
+bin
+obj
+data/*
+out
+.env
+
+# 例外
+!data/.gitkeep

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文字情報見る</title>
+
+    <style>
+      header {
+        position: fixed;
+        top: 0;
+        background-color: cornflowerblue;
+        height: 3em;
+        align-items: center;
+      }
+      header > .nav-wrapper {
+        display: flex;
+        justify-content: center;
+        height: 100%;
+      }
+      header > .nav-wrapper > a.navitem {
+        border: 1px solid black;
+        padding: 0.5em;
+        text-decoration: none;
+        color: white;
+      }
+
+      main {
+        margin-top: 4em;
+      }
+      table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+      }
+      td {
+        border: solid 1px black;
+      }
+      tr.bg-0 {
+        background-color: cyan;
+      }
+      tr.bg-1 {
+        background-color: lightcyan;
+      }
+      tr.bg-2 {
+        background-color: yellowgreen;
+      }
+      tr.bg-3 {
+        background-color: greenyellow;
+      }
+      tr.bg-4 {
+        background-color: lightsalmon;
+      }
+      tr.bg-5 {
+        background-color: lightpink;
+      }
+      tr.bg-6 {
+        background-color: lightgray;
+      }
+
+      #nameTable > colgroup col:nth-child(1) {
+        width: 20%;
+      }
+      #nameTable > colgroup col:nth-child(2) {
+        width: 30%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="nav-wrapper">
+        <a class="navitem" href="#order-0">漢字カタカナ</a>
+        <a class="navitem" href="#order-1">カタカナ漢字</a>
+        <a class="navitem" href="#order-2">漢字ひらがな</a>
+        <a class="navitem" href="#order-3">ひらがな漢字</a>
+        <a class="navitem" href="#order-4">ひらがなのみ</a>
+        <a class="navitem" href="#order-5">カタカナのみ</a>
+        <a class="navitem" href="#order-6">漢字のみ</a>
+        <a class="navitem" href="#order-400">判別種別なし</a>
+      </div>
+    </header>
+    <main id="main">
+      <h1>文字情報見る</h1>
+
+      <table id="nameTable">
+        <colgroup>
+          <col />
+          <col />
+          <col />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>判定</th>
+            <th>文字列</th>
+            <th>文字列（１６進数）</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+  </body>
+
+  <script>
+    function isKanjiKakatana(string) {
+      // 30FB 中点 ＜ー除く
+      // 30FC 長音
+      let order = 0;
+      if (/^[\u4E00-\u9FFF]+[\u30A0-\u30FA\u30FC-\u30FF]+$/.test(string)) {
+        return { text: '漢字カタカナ', order: order };
+      }
+
+      order++;
+      if (/^[\u30A0-\u30FA\u30FC-\u30FF]+[\u4E00-\u9FFF]+$/.test(string)) {
+        return { text: 'カタカナ漢字', order: order };
+      }
+
+      order++;
+      if (/^[\u4E00-\u9FFF]+[ぁ-んー]+$/.test(string)) {
+        return { text: '漢字ひらがな', order: order };
+      }
+
+      order++;
+      if (/^[ぁ-んー]+[\u4E00-\u9FFF]+$/.test(string)) {
+        return { text: 'ひらがな漢字', order: order };
+      }
+
+      order++;
+      if (/^[ぁ-んー]+$/.test(string)) {
+        return { text: 'ひらがなのみ', order: order };
+      }
+
+      order++;
+      if (/^[\u30A0-\u30FA\u30FC-\u30FF]+$/.test(string)) {
+        return { text: 'カタカナのみ', order: order };
+      }
+
+      order++;
+      if (/^[\u4E00-\u9FFF]+/.test(string)) {
+        return { text: '漢字のみ', order: order };
+      }
+
+      return { text: '判定種別なし', order: 400 };
+    }
+
+    window.onload = function () {
+      let tmpOrder = null;
+
+      csvRows
+        .sort((a, b) => {
+          const { text: text_a, order: order_a } = isKanjiKakatana(
+            a.split(',')[0]
+          );
+          const { text: text_b, order: order_b } = isKanjiKakatana(
+            b.split(',')[0]
+          );
+          return order_a - order_b;
+        })
+        .forEach((row) => {
+          const tr = document.createElement('tr');
+
+          const csv = row.split(',');
+          const string = csv[0];
+          const { text, order } = isKanjiKakatana(string);
+
+          const isUpdateOrder = tmpOrder != order;
+          if (isUpdateOrder) {
+            tmpOrder = order;
+          }
+          tr.classList.add('bg-' + order);
+
+          const dtd = document.createElement('td');
+          if (isUpdateOrder) {
+            dtd.id = 'order-' + order;
+          }
+
+          dtd.innerText = text;
+          tr.append(dtd);
+
+          const td = document.createElement('td');
+          td.innerText = string;
+          tr.append(td);
+
+          const hextd = document.createElement('td');
+          hextd.innerText = csv.slice(1).join(',');
+          tr.append(hextd);
+
+          document.querySelector('#nameTable > tbody').append(tr);
+        });
+    };
+
+    //Program.cs 側からCSVデータを文字列として書き込む
+    const csvRows = `{{ csvdata }}`.split('\n');
+  </script>
+</html>
